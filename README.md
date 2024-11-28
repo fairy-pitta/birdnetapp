@@ -80,6 +80,6 @@ To learn more about React Native, take a look at the following resources:
 
 
 # References 
-[Setting up React Native without Framework](https://reactnative.dev/docs/getting-started-without-a-framework)
-[On React-native-audio-record](https://blog.leko.jp/post/rn-audio-record/)
-[Implementing Recording and Playback in React native]https://instamobile.io/react-native-tutorials/react-native-record-audio-play/
+- [Setting up React Native without Framework](https://reactnative.dev/docs/getting-started-without-a-framework)
+- [On React-native-audio-record](https://blog.leko.jp/post/rn-audio-record/)
+- [Implementing Recording and Playback in React native]https://instamobile.io/react-native-tutorials/react-native-record-audio-play/
