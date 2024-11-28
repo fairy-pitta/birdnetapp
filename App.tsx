@@ -1,118 +1,143 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { Component } from 'react';
+import { View, StyleSheet, Alert, Platform, PermissionsAndroid } from 'react-native';
+import { Button, Card, Title } from 'react-native-paper';
+import AudioRecorderPlayer, {
+  AVEncoderAudioQualityIOSType,
+  AVEncodingOption,
+  AudioEncoderAndroidType,
+  AudioSourceAndroidType,
+} from 'react-native-audio-recorder-player';
+import RNFS from 'react-native-fs';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+export default class App extends Component {
+  audioRecorderPlayer: AudioRecorderPlayer;
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  constructor(props) {
+    super(props);
+    this.audioRecorderPlayer = new AudioRecorderPlayer();
+    this.state = {
+      recordTime: '00:00:00',
+      isRecording: false, // 録音中の状態
+    };
+  }
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  componentDidMount() {
+    this.requestPermissions();
+  }
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+  requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        ]);
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+        if (
+          granted['android.permission.RECORD_AUDIO'] !== PermissionsAndroid.RESULTS.GRANTED ||
+          granted['android.permission.WRITE_EXTERNAL_STORAGE'] !== PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          Alert.alert('Permission Denied', '録音およびストレージの権限が必要です。');
+        } else {
+          console.log('All permissions granted');
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+    }
   };
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+  onStartRecord = async () => {
+    if (this.state.isRecording) {
+      console.log('Already recording. Ignoring duplicate request.');
+      return;
+    }
+
+    console.log('Attempting to start recorder...');
+    const path =
+      Platform.OS === 'ios'
+        ? `${RNFS.DocumentDirectoryPath}/hello.m4a`
+        : `${RNFS.ExternalDirectoryPath}/hello.m4a`;
+
+    const audioSet = {
+      AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
+      AudioSourceAndroid: AudioSourceAndroidType.MIC,
+      AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
+      AVNumberOfChannelsKeyIOS: 2,
+      AVFormatIDKeyIOS: AVEncodingOption.aac,
+    };
+
+    try {
+      const uri = await this.audioRecorderPlayer.startRecorder(path, audioSet);
+      this.audioRecorderPlayer.addRecordBackListener((e) => {
+        this.setState({
+          recordTime: this.audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
+        });
+      });
+
+      console.log(`Recording started at: ${uri}`);
+      this.setState({ isRecording: true });
+    } catch (error) {
+      console.error('Error while starting recording:', error);
+    }
+  };
+
+  onStopRecord = async () => {
+    console.log('Stopping recording...');
+    try {
+      const result = await this.audioRecorderPlayer.stopRecorder();
+      this.audioRecorderPlayer.removeRecordBackListener();
+      console.log(`Recording stopped. File saved at: ${result}`);
+
+      this.setState({ isRecording: false, recordTime: '00:00:00' });
+    } catch (error) {
+      console.error('Error while stopping recording:', error);
+    }
+  };
+
+  render() {
+    return (
+      <Card style={styles.card}>
+        <View style={styles.container}>
+          <Title>録音時間: {this.state.recordTime}</Title>
+          <Button
+            mode="contained"
+            icon="record"
+            onPress={() => {
+              console.log('Record button pressed');
+              this.onStartRecord();
+            }}
+            style={styles.button}
+          >
+            RECORD
+          </Button>
+          <Button
+            mode="contained"
+            icon="stop"
+            onPress={this.onStopRecord}
+            style={styles.button}
+          >
+            STOP
+          </Button>
         </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+      </Card>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  card: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  container: {
+    flexDirection: 'column',
+    alignItems: 'center',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  button: {
+    marginTop: 10,
+    width: 200,
   },
 });
-
-export default App;
