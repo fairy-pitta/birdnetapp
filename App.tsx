@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, Alert, Platform, PermissionsAndroid } from 'react-native';
-import { Button, Card, Title } from 'react-native-paper';
+import { Button, Card, Title, Divider } from 'react-native-paper';
 import AudioRecorderPlayer, {
   AVEncoderAudioQualityIOSType,
   AVEncodingOption,
@@ -9,15 +9,28 @@ import AudioRecorderPlayer, {
 } from 'react-native-audio-recorder-player';
 import RNFS from 'react-native-fs';
 
-export default class App extends Component {
+interface AppState {
+  recordTime: string;
+  isRecording: boolean;
+  isPlaying: boolean;
+  playTime: string;
+  duration: string;
+  filePath: string;
+}
+
+export default class App extends Component<{}, AppState>{
   audioRecorderPlayer: AudioRecorderPlayer;
 
-  constructor(props) {
+  constructor(props: {}) {
     super(props);
     this.audioRecorderPlayer = new AudioRecorderPlayer();
     this.state = {
       recordTime: '00:00:00',
-      isRecording: false, // 録音中の状態
+      isRecording: false,
+      isPlaying: false,
+      playTime: '00:00:00',
+      duration: '00:00:00',
+      filePath: '',
     };
   }
 
@@ -25,6 +38,7 @@ export default class App extends Component {
     this.requestPermissions();
   }
 
+  // パーミッションのリクエスト
   requestPermissions = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -43,11 +57,12 @@ export default class App extends Component {
           console.log('All permissions granted');
         }
       } catch (err) {
-        console.warn(err);
+        console.warn('Permission request error:', err);
       }
     }
   };
 
+  // 録音を開始
   onStartRecord = async () => {
     if (this.state.isRecording) {
       console.log('Already recording. Ignoring duplicate request.');
@@ -70,19 +85,29 @@ export default class App extends Component {
 
     try {
       const uri = await this.audioRecorderPlayer.startRecorder(path, audioSet);
+
+      // 録音中の進行状況を監視
       this.audioRecorderPlayer.addRecordBackListener((e) => {
-        this.setState({
-          recordTime: this.audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
-        });
+        if (e && e.currentPosition !== undefined) {
+          const currentPosition = Math.floor(e.currentPosition);
+          console.log('Recording progress:', currentPosition);
+
+          this.setState({
+            recordTime: this.audioRecorderPlayer.mmssss(currentPosition),
+          });
+        } else {
+          console.warn('Recording progress listener received undefined.');
+        }
       });
 
       console.log(`Recording started at: ${uri}`);
-      this.setState({ isRecording: true });
+      this.setState({ isRecording: true, filePath: path });
     } catch (error) {
       console.error('Error while starting recording:', error);
     }
   };
 
+  // 録音を停止
   onStopRecord = async () => {
     console.log('Stopping recording...');
     try {
@@ -96,6 +121,66 @@ export default class App extends Component {
     }
   };
 
+  // 再生を開始
+  onStartPlay = async () => {
+    if (this.state.isPlaying) {
+      console.log('Already playing. Ignoring duplicate request.');
+      return;
+    }
+
+    const { filePath } = this.state;
+    if (!filePath) {
+      Alert.alert('No recording found', '録音が見つかりません。');
+      return;
+    }
+
+    console.log('Attempting to start playback...');
+    try {
+      const uri = await this.audioRecorderPlayer.startPlayer(filePath);
+      this.audioRecorderPlayer.setVolume(1.0);
+
+      // 再生中の進行状況を監視
+      this.audioRecorderPlayer.addPlayBackListener((e) => {
+        if (e && e.currentPosition !== undefined && e.duration !== undefined) {
+          const currentPosition = Math.floor(e.currentPosition);
+          const duration = Math.floor(e.duration);
+
+          console.log('Playback progress:', currentPosition);
+
+          this.setState({
+            playTime: this.audioRecorderPlayer.mmssss(currentPosition),
+            duration: this.audioRecorderPlayer.mmssss(duration),
+          });
+        } else {
+          console.warn('Playback progress listener received undefined.');
+        }
+
+        // 再生終了時の処理
+        if (e.currentPosition >= e.duration) {
+          this.onStopPlay();
+        }
+      });
+
+      console.log(`Playback started at: ${uri}`);
+      this.setState({ isPlaying: true });
+    } catch (error) {
+      console.error('Error while starting playback:', error);
+    }
+  };
+
+  // 再生を停止
+  onStopPlay = async () => {
+    console.log('Stopping playback...');
+    try {
+      await this.audioRecorderPlayer.stopPlayer();
+      this.audioRecorderPlayer.removePlayBackListener();
+
+      this.setState({ isPlaying: false, playTime: '00:00:00', duration: '00:00:00' });
+    } catch (error) {
+      console.error('Error while stopping playback:', error);
+    }
+  };
+
   render() {
     return (
       <Card style={styles.card}>
@@ -104,10 +189,7 @@ export default class App extends Component {
           <Button
             mode="contained"
             icon="record"
-            onPress={() => {
-              console.log('Record button pressed');
-              this.onStartRecord();
-            }}
+            onPress={this.onStartRecord}
             style={styles.button}
           >
             RECORD
@@ -116,6 +198,26 @@ export default class App extends Component {
             mode="contained"
             icon="stop"
             onPress={this.onStopRecord}
+            style={styles.button}
+          >
+            STOP
+          </Button>
+          <Divider style={styles.divider} />
+          <Title>
+            再生時間: {this.state.playTime} / {this.state.duration}
+          </Title>
+          <Button
+            mode="contained"
+            icon="play"
+            onPress={this.onStartPlay}
+            style={styles.button}
+          >
+            PLAY
+          </Button>
+          <Button
+            mode="contained"
+            icon="stop"
+            onPress={this.onStopPlay}
             style={styles.button}
           >
             STOP
@@ -139,5 +241,11 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 10,
     width: 200,
+  },
+  divider: {
+    marginVertical: 20,
+    backgroundColor: '#000',
+    height: 1,
+    width: '80%',
   },
 });
