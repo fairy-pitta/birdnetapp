@@ -1531,6 +1531,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
     - ZIPFoundation
+  - RNAudio (4.3.0):
+    - React
   - RNAudioRecorderPlayer (3.6.12):
     - React-Core
   - RNCAsyncStorage (2.1.0):
@@ -1735,6 +1737,51 @@ PODS:
     - RNSound/Core (= 0.11.2)
   - RNSound/Core (0.11.2):
     - React-Core
+  - RNSoundPlayer (0.14.3):
+    - React-Core
+  - RNSVG (15.9.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - RNSVG/common (= 15.9.0)
+    - Yoga
+  - RNSVG/common (15.9.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNVectorIcons (10.2.0):
     - DoubleConversion
     - glog
@@ -1826,6 +1873,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeFileAccess (from `../node_modules/react-native-file-access`)
+  - RNAudio (from `../node_modules/react-native-audio`)
   - RNAudioRecorderPlayer (from `../node_modules/react-native-audio-recorder-player`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNFS (from `../node_modules/react-native-fs`)
@@ -1834,6 +1882,8 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSound (from `../node_modules/react-native-sound`)
+  - RNSoundPlayer (from `../node_modules/react-native-sound-player`)
+  - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -1970,6 +2020,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeFileAccess:
     :path: "../node_modules/react-native-file-access"
+  RNAudio:
+    :path: "../node_modules/react-native-audio"
   RNAudioRecorderPlayer:
     :path: "../node_modules/react-native-audio-recorder-player"
   RNCAsyncStorage:
@@ -1986,6 +2038,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSound:
     :path: "../node_modules/react-native-sound"
+  RNSoundPlayer:
+    :path: "../node_modules/react-native-sound-player"
+  RNSVG:
+    :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
   Yoga:
@@ -2055,6 +2111,7 @@ SPEC CHECKSUMS:
   ReactCodegen: ae99a130606068ed40d1d9c0d5f25fda142a0647
   ReactCommon: 89c87b343deacc8610b099ac764848f0ce937e3e
   ReactNativeFileAccess: 88227c4e1a32033263d94237b65126ee479c7b07
+  RNAudio: cae2991f2dccb75163f260b60da8051717b959fa
   RNAudioRecorderPlayer: 224c7de87722938aedce04000d09baa633148f5b
   RNCAsyncStorage: fe98f1b459a87b80f12207da80c50b3a3abb6081
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
@@ -2063,6 +2120,8 @@ SPEC CHECKSUMS:
   RNReanimated: 006a5d3961bf09c1e96d62ed436e02b2e43b89bb
   RNScreens: 44a3e358d5ccd7815c5ae9148988c562826992b2
   RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
+  RNSoundPlayer: 490822518cc1d6d80495ca7e3223df5869c30851
+  RNSVG: b2fbe96b2bb3887752f8abc1f495953847e90384
   RNVectorIcons: 07792a9538e8577c1263fcad187712e90d65d8fb
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 3deb2471faa9916c8a82dda2a22d3fba2620ad37
